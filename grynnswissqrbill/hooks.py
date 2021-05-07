@@ -16,7 +16,7 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/grynnswissqrbill/css/grynnswissqrbill.css"
-# app_include_js = "/assets/grynnswissqrbill/js/grynnswissqrbill.js"
+app_include_js = "/assets/grynnswissqrbill/js/index.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/grynnswissqrbill/css/grynnswissqrbill.css"
@@ -142,4 +142,3 @@ app_license = "MIT"
 # exempt linked doctypes from being automatically cancelled
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
-
