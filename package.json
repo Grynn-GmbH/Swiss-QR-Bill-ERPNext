@@ -1,0 +1,15 @@
+{
+  "name": "grynnswissqrbill",
+  "version": "1.0.0",
+  "description": "A Grynn Qr Bill",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "parcel build src/*.js --out-dir grynnswissqrbill/public/js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "swissqrbill": "^2.3.3"
+  }
+}
