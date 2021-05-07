@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include grynnswissqrbill *.css
+recursive-include grynnswissqrbill *.csv
+recursive-include grynnswissqrbill *.html
+recursive-include grynnswissqrbill *.ico
+recursive-include grynnswissqrbill *.js
+recursive-include grynnswissqrbill *.json
+recursive-include grynnswissqrbill *.md
+recursive-include grynnswissqrbill *.png
+recursive-include grynnswissqrbill *.py
+recursive-include grynnswissqrbill *.svg
+recursive-include grynnswissqrbill *.txt
+recursive-exclude grynnswissqrbill *.pyc
