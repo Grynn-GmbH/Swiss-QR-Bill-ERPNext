@@ -4,6 +4,5 @@
 *.swp
 tags
 node_modules
-grynnswissqrbill/docs/current
 .cache
 .vscode
