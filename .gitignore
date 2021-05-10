@@ -6,3 +6,4 @@ tags
 node_modules
 .cache
 .vscode
+.parcel-cache
