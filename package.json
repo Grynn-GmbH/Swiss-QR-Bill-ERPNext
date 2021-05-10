@@ -5,13 +5,20 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build src/*.js --out-dir grynnswissqrbill/public/js",
+    "build": "parcel build src/index.js --out-dir grynnswissqrbill/public/js",
     "production": "NODE_ENV=production parcel src/*.js  --out-dir grynnswissqrbill/public/js",
     "watch": "parcel src/*.js --out-dir grynnswissqrbill/public/js"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
+    "postcss": "^8.2.14",
     "swissqrbill": "^2.3.3"
+  },
+  "devDependencies": {
+    "eslint": "^7.26.0",
+    "parcel-bundler": "^1.12.5",
+    "prettier": "^2.3.0",
+    "prettier-eslint": "^12.0.0"
   }
 }
