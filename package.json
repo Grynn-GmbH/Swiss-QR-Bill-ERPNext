@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build src/index.js --out-dir grynnswissqrbill/public/js",
+    "build": "parcel build src/*.js --dist-dir grynnswissqrbill/public/js",
     "production": "NODE_ENV=production parcel src/*.js  --out-dir grynnswissqrbill/public/js",
-    "watch": "parcel src/*.js --out-dir grynnswissqrbill/public/js"
+    "watch": "parcel src/*.js --dist-dir grynnswissqrbill/public/js"
   },
   "author": "",
   "license": "MIT",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "eslint": "^7.26.0",
-    "parcel-bundler": "^1.12.5",
+    "parcel": "^2.0.0-beta.2",
     "prettier": "^2.3.0",
     "prettier-eslint": "^12.0.0"
   },
