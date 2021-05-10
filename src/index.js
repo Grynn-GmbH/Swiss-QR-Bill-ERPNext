@@ -64,13 +64,14 @@ const getAccount = async (companyName) => {
 
 window.frappe.ui.form.on("Sales Invoice", {
   on_submit: (frm, cdt, ndt) => {
-    let customer = frm.doc.customer;
-    let currency = frm.doc.currency;
-    let grand_total = frm.doc.grand_total;
-    let company = frm.doc.company;
-    let company_name = frm.doc.company_name;
-    let company_address = frm.doc.company_address_name;
-    let company_account_currency = frm.doc.party_account_currency;
+    console.log(frm);
+    // let customer = frm.doc.customer;
+    // let currency = frm.doc.currency;
+    // let grand_total = frm.doc.grand_total;
+    // let company = frm.doc.company;
+    // let company_name = frm.doc.company_name;
+    // let company_address = frm.doc.company_address_name;
+    // let company_account_currency = frm.doc.party_account_currency;
 
     // const address = getAddress("Address", frm.doc.customer_address_name);
     // const comapny_address = getAddress(
@@ -87,15 +88,15 @@ window.frappe.ui.form.on("Sales Invoice", {
     //     },
     //     "iban"
     //   )
-    console.log(
-      currency,
-      customer,
-      grand_total,
-      company,
-      company_name,
-      company_address,
-      company_account_currency
-    );
+    // console.log(
+    //   currency,
+    //   customer,
+    //   grand_total,
+    //   company,
+    //   company_name,
+    //   company_address,
+    //   company_account_currency
+    // );
   },
 });
 
