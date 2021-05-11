@@ -29,7 +29,7 @@ function triggerAttachment(file, docname) {
   formdata.append("folder", "Home/Attachments");
   formdata.append("doctype", "Sales Invoice");
   formdata.append("docname", docname);
-  formdata.append("file", file);
+  formdata.append("file", file, `${docname}.pdf`);
   fetch("/api/method/upload_file", {
     headers: {
       Accept: "application/json",
