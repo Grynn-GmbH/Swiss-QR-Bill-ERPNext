@@ -1,7 +1,7 @@
 // Swiss QR Bill Library
 import SwissQRBill from "swissqrbill/lib/browser";
 
-function main(paymentinfo, docname, papersize, language) {
+function main(paymentinfo, docname, frm, papersize, language) {
   const data = paymentinfo;
   // Creating A Stream
   const stream = new SwissQRBill.BlobStream();
@@ -18,18 +18,18 @@ function main(paymentinfo, docname, papersize, language) {
     // reader.readAsBinaryString(stream.toBlob());
     // reader.onload(() => {
     console.log(stream, pdf);
-    triggerAttachment(stream.toBlob(), docname);
+    triggerAttachment(stream.toBlob(), docname, frm);
     // });
   });
 }
 
-function triggerAttachment(file, docname) {
+function triggerAttachment(file, docname, frm) {
   let formdata = new FormData();
   formdata.append("is_private", 1);
   formdata.append("folder", "Home/Attachments");
   formdata.append("doctype", "Sales Invoice");
   formdata.append("docname", docname);
-  formdata.append("file", file, `${docname}.pdf`);
+  formdata.append("file", file, `${docname}-QRBILL.pdf`);
   fetch("/api/method/upload_file", {
     headers: {
       Accept: "application/json",
@@ -37,6 +37,8 @@ function triggerAttachment(file, docname) {
     },
     method: "POST",
     body: formdata,
+  }).then(() => {
+    frm.reload_doc();
   });
 }
 
@@ -114,10 +116,7 @@ window.frappe.ui.form.on("Sales Invoice", {
           country: "US", // Sales Invoice Country
         },
       };
-      main(config, frm.docname);
+      main(config, frm.docname, frm);
     });
   },
 });
-
-// TODO Step 1: Get Country Both, Account
-//TODO  Step 2 : To Find How Acutally Do Attachment
