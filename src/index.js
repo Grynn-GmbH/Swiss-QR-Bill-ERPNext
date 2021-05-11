@@ -1,7 +1,7 @@
 // Swiss QR Bill Library
 import SwissQRBill from "swissqrbill/lib/browser";
 
-function main(paymentinfo, papersize, language) {
+function main(paymentinfo, docname, papersize, language) {
   const data = paymentinfo;
   // Creating A Stream
   const stream = new SwissQRBill.BlobStream();
@@ -12,8 +12,31 @@ function main(paymentinfo, papersize, language) {
   });
   // On PDF Generation Attach
   pdf.on("finish", () => {
-    const url = stream.toBlobURL("application/pdf");
-    triggerDownload(url);
+    // const url = stream.toBlobURL("application/pdf");
+    // const triggerDownload()
+    // let reader = new FileReader();
+    // reader.readAsBinaryString(stream.toBlob());
+    // reader.onload(() => {
+    console.log(stream, pdf);
+    triggerAttachment(stream.toBlob(), docname);
+    // });
+  });
+}
+
+function triggerAttachment(file, docname) {
+  let formdata = new FormData();
+  formdata.append("is_private", 1);
+  formdata.append("folder", "Home/Attachments");
+  formdata.append("doctype", "Sales Invoice");
+  formdata.append("docname", docname);
+  formdata.append("file", file);
+  fetch("/api/method/upload_file", {
+    headers: {
+      Accept: "application/json",
+      "X-Frappe-CSRF-Token": window.frappe.csrf_token,
+    },
+    method: "POST",
+    body: formdata,
   });
 }
 
@@ -91,7 +114,7 @@ window.frappe.ui.form.on("Sales Invoice", {
           country: "US", // Sales Invoice Country
         },
       };
-      main(config);
+      main(config, frm.docname);
     });
   },
 });
