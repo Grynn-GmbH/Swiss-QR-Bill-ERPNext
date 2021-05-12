@@ -10,12 +10,13 @@ function main(paymentinfo, docname, frm, papersize, language) {
     language: language || "DE",
     size: papersize || "A4",
   });
+
   // On PDF Generation Attach
-  show_progress(60, "generating pdf...");
+  showProgress(60, "generating pdf...");
   pdf.on("finish", () => {
     // const url = stream.toBlobURL("application/pdf");
     // const triggerDownload()
-    show_progress(80, "uploading pdf...");
+    showProgress(80, "uploading pdf...");
     triggerAttachment(stream.toBlob(), docname, frm);
   });
 }
@@ -35,7 +36,7 @@ function triggerAttachment(file, docname, frm) {
     method: "POST",
     body: formdata,
   }).then(() => {
-    show_progress(100, "done");
+    showProgress(100, "done");
     frm.reload_doc();
   });
 }
@@ -55,20 +56,20 @@ function triggerAttachment(file, docname, frm) {
 
 window.frappe.ui.form.on("Sales Invoice", {
   on_submit: (frm, cdt, ndt) => {
-    show_progress(10, "getting data...");
+    showProgress(10, "getting data...");
     let customer = frm.doc.customer;
     let amount = frm.doc.grand_total;
     const ref = frm.docname.split("-");
-    const padding = "0".repeat(27 - ref.length);
-    const reference = `${padding}${ref.pop()}`;
-
+    const _reference = `00000000000${ref[1]}${ref[2]}00000000`;
+    const checksum = SwissQRBill.utils.calculateQRReferenceChecksum(_reference);
+    const reference = `${_reference}${checksum}`;
     let company = frm.doc.company;
 
     let companyAdderss = window.frappe.db.get_doc(
       "Address",
       frm.doc.company_address
     );
-    let currency = frm.doc.party_account_currency;
+    let currency = getCurrency(frm.doc.party_account_currency);
     let customerAddress = window.frappe.db.get_doc(
       "Address",
       frm.doc.customer_address
@@ -84,15 +85,16 @@ window.frappe.ui.form.on("Sales Invoice", {
     );
 
     Promise.all([companyAdderss, customerAddress, iban]).then((values) => {
-      show_progress(40, "generating pdf...");
+      showProgress(40, "generating pdf...");
       const companyAddress = values[0];
       const customerAddress = values[1];
       const iban = values[2];
+      console.log(iban);
 
       const config = {
-        currency: "CHF",
+        currency,
         amount,
-        reference: "210000000003139471430009017",
+        reference,
         creditor: {
           name: company, //
           address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
@@ -114,8 +116,15 @@ window.frappe.ui.form.on("Sales Invoice", {
   },
 });
 
-const show_progress = (current, description) => {
+const showProgress = (current, description) => {
   const title = "Uplading Swiss QR Bill";
   const total = 100;
   window.frappe.show_progress(title, current, total, description, true);
+};
+
+const getCurrency = (currency) => {
+  if (currency === "CHF" || currency === "EUR") {
+    return currency;
+  }
+  return "CHF";
 };
