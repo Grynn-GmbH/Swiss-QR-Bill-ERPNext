@@ -100,7 +100,7 @@ window.frappe.ui.form.on("Sales Invoice", {
           address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
           zip: parseInt(companyAddress.pincode), // Bank Account  Code
           city: companyAddress.city, // Bank Account City
-          account: "CH4431999123000889012", // Bank Account Iban
+          account: iban.message.iban, // Bank Account Iban
           country: "US", // Bank Country
         },
         debtor: {
