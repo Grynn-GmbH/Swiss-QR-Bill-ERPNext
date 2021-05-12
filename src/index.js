@@ -1,17 +1,13 @@
-// Swiss QR Bill Library
 import SwissQRBill from "swissqrbill/lib/browser";
 
 function main(paymentinfo, docname, frm, papersize, language) {
   const data = paymentinfo;
-  // Creating A Stream
   const stream = new SwissQRBill.BlobStream();
-  // Getting PDF
   const pdf = new SwissQRBill.PDF(data, stream, {
     language: language || "DE",
     size: papersize || "A4",
   });
 
-  // On PDF Generation Attach
   showProgress(60, "generating pdf...");
   pdf.on("finish", () => {
     // const url = stream.toBlobURL("application/pdf");
