@@ -11,9 +11,11 @@ function main(paymentinfo, docname, frm, papersize, language) {
     size: papersize || "A4",
   });
   // On PDF Generation Attach
+  show_progress(60, "generating pdf...");
   pdf.on("finish", () => {
     // const url = stream.toBlobURL("application/pdf");
     // const triggerDownload()
+    show_progress(80, "uploading pdf...");
     triggerAttachment(stream.toBlob(), docname, frm);
   });
 }
@@ -33,6 +35,7 @@ function triggerAttachment(file, docname, frm) {
     method: "POST",
     body: formdata,
   }).then(() => {
+    show_progress(100, "done");
     frm.reload_doc();
   });
 }
@@ -52,6 +55,7 @@ function triggerAttachment(file, docname, frm) {
 
 window.frappe.ui.form.on("Sales Invoice", {
   on_submit: (frm, cdt, ndt) => {
+    show_progress(10, "getting data...");
     let customer = frm.doc.customer;
     let amount = frm.doc.grand_total;
     const ref = frm.docname.split("-");
@@ -59,6 +63,7 @@ window.frappe.ui.form.on("Sales Invoice", {
     const reference = `${padding}${ref.pop()}`;
 
     let company = frm.doc.company;
+
     let companyAdderss = window.frappe.db.get_doc(
       "Address",
       frm.doc.company_address
@@ -79,6 +84,7 @@ window.frappe.ui.form.on("Sales Invoice", {
     );
 
     Promise.all([companyAdderss, customerAddress, iban]).then((values) => {
+      show_progress(40, "generating pdf...");
       const companyAddress = values[0];
       const customerAddress = values[1];
       const iban = values[2];
@@ -107,3 +113,9 @@ window.frappe.ui.form.on("Sales Invoice", {
     });
   },
 });
+
+const show_progress = (current, description) => {
+  const title = "Uplading Swiss QR Bill";
+  const total = 100;
+  window.frappe.show_progress(title, current, total, description, true);
+};
