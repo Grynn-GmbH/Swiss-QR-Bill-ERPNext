@@ -10,6 +10,8 @@ app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "grynn@grynn.in"
 app_license = "MIT"
+fixtures = [{"dt": "Custom Field", "filters": [
+    ["fieldname", "in", ("esr_reference_code")]]}]
 
 # Includes in <head>
 # ------------------
