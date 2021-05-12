@@ -55,14 +55,8 @@ window.frappe.ui.form.on("Sales Invoice", {
     showProgress(10, "getting data...");
     let customer = frm.doc.customer;
     let amount = frm.doc.grand_total;
-    const _ref = frm.docname.split("-").join("");
-    const ref = _ref.substr(_ref.length - 7);
-    const _reference = `000000000000000000${ref}0`;
-    const checksum = SwissQRBill.utils.calculateQRReferenceChecksum(_reference);
-    const reference = `${_reference}${checksum}`;
-    console.log(reference);
+    const reference = getReference(frm.doc.name);
     let company = frm.doc.company;
-
     let companyAdderss = window.frappe.db.get_doc(
       "Address",
       frm.doc.company_address
@@ -112,10 +106,16 @@ window.frappe.ui.form.on("Sales Invoice", {
       main(config, frm.docname, frm);
     });
   },
+
+  before_submit: (frm) => {
+    console.log(frm);
+    const reference = getReference(frm.doc.name);
+    frm.doc.esr_reference_code = reference;
+  },
 });
 
 const showProgress = (current, description) => {
-  const title = "Uplading Swiss QR Bill";
+  const title = "Uploading Swiss QR Bill";
   const total = 100;
   window.frappe.show_progress(title, current, total, description, true);
 };
@@ -125,4 +125,12 @@ const getCurrency = (currency) => {
     return currency;
   }
   return "CHF";
+};
+
+const getReference = (docname) => {
+  const _ref = docname.split("-").join("");
+  const ref = _ref.substr(_ref.length - 7);
+  const _reference = `000000000000000000${ref}0`;
+  const checksum = SwissQRBill.utils.calculateQRReferenceChecksum(_reference);
+  return `${_reference}${checksum}`;
 };
