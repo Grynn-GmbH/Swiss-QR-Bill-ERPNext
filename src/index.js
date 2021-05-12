@@ -58,7 +58,7 @@ window.frappe.ui.form.on("Sales Invoice", {
     const _ref = frm.docname.split("-");
     let ref = `${_ref[1]}${_ref[2]}`;
     ref = ref.substr(ref.length - 7);
-    const _reference = `00000000000${ref[1]}${ref[2]}00000000`;
+    const _reference = `00000000000${ref}00000000`;
     const checksum = SwissQRBill.utils.calculateQRReferenceChecksum(_reference);
     const reference = `${_reference}${checksum}`;
     let company = frm.doc.company;
