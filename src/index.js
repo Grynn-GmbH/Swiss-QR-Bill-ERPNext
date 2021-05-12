@@ -14,12 +14,7 @@ function main(paymentinfo, docname, frm, papersize, language) {
   pdf.on("finish", () => {
     // const url = stream.toBlobURL("application/pdf");
     // const triggerDownload()
-    // let reader = new FileReader();
-    // reader.readAsBinaryString(stream.toBlob());
-    // reader.onload(() => {
-    console.log(stream, pdf);
     triggerAttachment(stream.toBlob(), docname, frm);
-    // });
   });
 }
 
@@ -57,8 +52,6 @@ function triggerAttachment(file, docname, frm) {
 
 window.frappe.ui.form.on("Sales Invoice", {
   on_submit: (frm, cdt, ndt) => {
-    console.log(frm);
-
     let customer = frm.doc.customer;
     let amount = frm.doc.grand_total;
     const ref = frm.docname.split("-");
@@ -85,16 +78,10 @@ window.frappe.ui.form.on("Sales Invoice", {
       "iban"
     );
 
-    companyAdderss.then((val) => console.log(val));
-    customerAddress.then((val) => console.log(val));
-    iban.then((val) => console.log(val));
-
     Promise.all([companyAdderss, customerAddress, iban]).then((values) => {
       const companyAddress = values[0];
       const customerAddress = values[1];
       const iban = values[2];
-
-      console.log(iban.message.iban);
 
       const config = {
         currency: "CHF",
