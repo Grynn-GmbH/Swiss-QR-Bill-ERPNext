@@ -51,7 +51,7 @@ function triggerAttachment(file, docname, frm) {
 // }
 
 window.frappe.ui.form.on("Sales Invoice", {
-  on_submit: (frm, cdt, ndt) => {
+  on_submit: (frm) => {
     showProgress(10, "getting data...");
     let customer = frm.doc.customer;
     let amount = frm.doc.grand_total;
