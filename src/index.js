@@ -3,18 +3,22 @@ import SwissQRBill from "swissqrbill/lib/browser";
 function main(paymentinfo, docname, frm, papersize, language) {
   const data = paymentinfo;
   const stream = new SwissQRBill.BlobStream();
-  const pdf = new SwissQRBill.PDF(data, stream, {
-    language: language || "DE",
-    size: papersize || "A4",
-  });
+  try {
+    const pdf = new SwissQRBill.PDF(data, stream, {
+      language: language || "DE",
+      size: papersize || "A4",
+    });
 
-  showProgress(60, "generating pdf...");
-  pdf.on("finish", () => {
-    // const url = stream.toBlobURL("application/pdf");
-    // const triggerDownload()
-    showProgress(80, "uploading pdf...");
-    triggerAttachment(stream.toBlob(), docname, frm);
-  });
+    showProgress(60, "generating pdf...");
+    pdf.on("finish", () => {
+      // const url = stream.toBlobURL("application/pdf");
+      // const triggerDownload()
+      showProgress(80, "uploading pdf...");
+      triggerAttachment(stream.toBlob(), docname, frm);
+    });
+  } catch (error) {
+    showError(error);
+  }
 }
 
 function triggerAttachment(file, docname, frm) {
@@ -57,31 +61,31 @@ window.frappe.ui.form.on("Sales Invoice", {
     let amount = frm.doc.grand_total;
     const reference = getReference(frm.doc.name);
     let company = frm.doc.company;
-    let companyAdderss = window.frappe.db.get_doc(
-      "Address",
-      frm.doc.company_address
-    );
+    let companyAdderss = window.frappe.db
+      .get_doc("Address", frm.doc.company_address)
+      .catch(() => showError("Company Address Not Found"));
     let currency = getCurrency(frm.doc.party_account_currency);
-    let customerAddress = window.frappe.db.get_doc(
-      "Address",
-      frm.doc.customer_address
-    );
-    let iban = window.frappe.db.get_value(
-      "Bank Account",
-      {
-        is_default: 1,
-        is_company_account: 1,
-        company: company,
-      },
-      "iban"
-    );
+
+    let customerAddress = window.frappe.db
+      .get_doc("Address", frm.doc.customer_address)
+      .catch(() => showError("Customer Address Not Found"));
+    let iban = window.frappe.db
+      .get_value(
+        "Bank Account",
+        {
+          is_default: 1,
+          is_company_account: 1,
+          company: company,
+        },
+        "iban"
+      )
+      .catch(() => showError("Swiss Iban Not Found"));
 
     Promise.all([companyAdderss, customerAddress, iban]).then((values) => {
       showProgress(40, "generating pdf...");
       const companyAddress = values[0];
       const customerAddress = values[1];
       const iban = values[2];
-      console.log(iban);
 
       const config = {
         currency,
@@ -133,4 +137,9 @@ const getReference = (docname) => {
   const _reference = `000000000000000000${ref}0`;
   const checksum = SwissQRBill.utils.calculateQRReferenceChecksum(_reference);
   return `${_reference}${checksum}`;
+};
+
+const showError = (error) => {
+  window.frappe.hide_progress();
+  window.frappe.throw(error);
 };
