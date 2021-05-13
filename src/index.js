@@ -74,6 +74,8 @@ window.frappe.ui.form.on("Sales Invoice", {
 
         let currency = getCurrency(frm.doc.party_account_currency);
 
+        if (!currency) return;
+
         let customerAddress = window.frappe.db
           .get_doc("Address", frm.doc.customer_address)
           .catch(() => showError("Customer Address Not Found"));
