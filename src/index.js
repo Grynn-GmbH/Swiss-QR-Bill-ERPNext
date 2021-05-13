@@ -61,6 +61,7 @@ window.frappe.ui.form.on("Sales Invoice", {
     let amount = frm.doc.grand_total;
     const reference = getReference(frm.doc.name);
     let company = frm.doc.company;
+    const language = getLanguage(frm.doc.print_language);
     let companyAdderss = window.frappe.db
       .get_doc("Address", frm.doc.company_address)
       .catch(() => showError("Company Address Not Found"));
@@ -69,46 +70,48 @@ window.frappe.ui.form.on("Sales Invoice", {
     let customerAddress = window.frappe.db
       .get_doc("Address", frm.doc.customer_address)
       .catch(() => showError("Customer Address Not Found"));
-    let iban = window.frappe.db
-      .get_value(
-        "Bank Account",
-        {
-          is_default: 1,
-          is_company_account: 1,
-          company: company,
-        },
-        "iban"
-      )
-      .catch(() => showError("Swiss Iban Not Found"));
+    let iban = window.frappe.db.get_value(
+      "Bank Account",
+      {
+        is_default: 1,
+        is_company_account: 1,
+        company: company,
+      },
+      "iban"
+    );
 
-    Promise.all([companyAdderss, customerAddress, iban]).then((values) => {
-      showProgress(40, "generating pdf...");
-      const companyAddress = values[0];
-      const customerAddress = values[1];
-      const iban = values[2];
+    Promise.all([companyAdderss, customerAddress, iban])
+      .then((values) => {
+        showProgress(40, "generating pdf...");
+        const companyAddress = values[0];
+        const customerAddress = values[1];
+        const iban = values[2];
 
-      const config = {
-        currency,
-        amount,
-        reference,
-        creditor: {
-          name: company, //
-          address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
-          zip: parseInt(companyAddress.pincode), // Bank Account  Code
-          city: companyAddress.city, // Bank Account City
-          account: iban.message.iban, // Bank Account Iban
-          country: "US", // Bank Country
-        },
-        debtor: {
-          name: customer, // Customer Doctype
-          address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
-          zip: customerAddress.pincode, // Sales Invoice PCode
-          city: customerAddress.city, // Sales Invoice City
-          country: "US", // Sales Invoice Country
-        },
-      };
-      main(config, frm.docname, frm);
-    });
+        const config = {
+          currency,
+          amount,
+          reference,
+          creditor: {
+            name: company, //
+            address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
+            zip: parseInt(companyAddress.pincode), // Bank Account  Code
+            city: companyAddress.city, // Bank Account City
+            account: iban.message.iban, // Bank Account Iban
+            country: "US", // Bank Country
+          },
+          debtor: {
+            name: customer, // Customer Doctype
+            address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
+            zip: customerAddress.pincode, // Sales Invoice PCode
+            city: customerAddress.city, // Sales Invoice City
+            country: "US", // Sales Invoice Country
+          },
+        };
+        main(config, frm.docname, frm, "A4", language);
+      })
+      .catch((error) => {
+        showError(error);
+      });
   },
 
   before_submit: (frm) => {
@@ -142,4 +145,16 @@ const getReference = (docname) => {
 const showError = (error) => {
   window.frappe.hide_progress();
   window.frappe.throw(error);
+};
+
+const getLanguage = (language) => {
+  if (
+    (language === "en") |
+    (language === "fr") |
+    (language === "it") |
+    (language === "de")
+  ) {
+    return language.toUpperCase();
+  }
+  return "DE";
 };
