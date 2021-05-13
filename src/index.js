@@ -93,28 +93,41 @@ window.frappe.ui.form.on("Sales Invoice", {
               return;
             }
 
-            const config = {
-              currency,
-              amount,
-              reference,
-              creditor: {
-                name: company, //
-                address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
-                zip: parseInt(companyAddress.pincode), // Bank Account  Code
-                city: companyAddress.city, // Bank Account City
-                account: iban, // Bank Account Iban
-                country: "US", // Bank Country
-              },
-              debtor: {
-                name: customer, // Customer Doctype
-                address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
-                zip: customerAddress.pincode, // Sales Invoice PCode
-                city: customerAddress.city, // Sales Invoice City
-                country: "US", // Sales Invoice Country
-              },
-            };
-            console.log(config);
-            main(config, frm.docname, frm, "A4", language);
+            const companyCountry = window.frapp.db.get_doc(
+              "Country",
+              companyAdderss.country
+            );
+            const customerCountry = window.frapp.db.get_doc(
+              "Country",
+              companyAdderss.country
+            );
+
+            Promise.all([companyCountry, customerCountry]).then((countries) => {
+              const companyCountry = countries[0].code.toUpperCase();
+              const customerCountry = countries[0].code.toUpperCase();
+
+              const config = {
+                currency,
+                amount,
+                reference,
+                creditor: {
+                  name: company, //
+                  address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
+                  zip: parseInt(companyAddress.pincode), // Bank Account  Code
+                  city: companyAddress.city, // Bank Account City
+                  account: iban, // Bank Account Iban
+                  country: companyCountry, // Bank Country
+                },
+                debtor: {
+                  name: customer, // Customer Doctype
+                  address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
+                  zip: customerAddress.pincode, // Sales Invoice PCode
+                  city: customerAddress.city, // Sales Invoice City
+                  country: customerCountry, // Sales Invoice Country
+                },
+              };
+              main(config, frm.docname, frm, "A4", language);
+            });
           })
           .catch((error) => {
             showError(error);
