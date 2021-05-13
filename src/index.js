@@ -3,7 +3,6 @@ import SwissQRBill from "swissqrbill/lib/browser";
 function main(paymentinfo, docname, frm, papersize, language) {
   const data = paymentinfo;
   const stream = new SwissQRBill.BlobStream();
-  console.log(language);
   try {
     const pdf = new SwissQRBill.PDF(data, stream, {
       language: language || "DE",
@@ -63,7 +62,6 @@ window.frappe.ui.form.on("Sales Invoice", {
     const reference = getReference(frm.doc.name);
     let company = frm.doc.company;
     const language = getLanguage(frm.doc.language);
-    console.log(language);
     let companyAdderss = window.frappe.db
       .get_doc("Address", frm.doc.company_address)
       .catch(() => showError("Company Address Not Found"));
@@ -117,7 +115,6 @@ window.frappe.ui.form.on("Sales Invoice", {
   },
 
   before_submit: (frm) => {
-    console.log(frm);
     const reference = getReference(frm.doc.name);
     frm.doc.esr_reference_code = reference;
   },
