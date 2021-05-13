@@ -54,95 +54,88 @@ function triggerAttachment(file, docname, frm) {
 //   a.dispatchEvent(evt);
 // }
 
-window.frappe.ui.form.on("Sales Invoice", {
-  on_submit: (frm) => {
-    showProgress(10, "getting data...");
-    let customer = frm.doc.customer;
-    let amount = frm.doc.grand_total;
-    const reference = getReference(frm.doc.name);
-    let company = frm.doc.company;
-    const language = getLanguage(frm.doc.language);
+const createQRBill = (frm) => {
+  showProgress(10, "getting data...");
+  let customer = frm.doc.customer;
+  let amount = frm.doc.grand_total;
+  const reference = getReference(frm.doc.name);
+  let company = frm.doc.company;
+  const language = getLanguage(frm.doc.language);
 
-    window.frappe.db
-      .get_doc("Swiss QR Bill Settings", company)
-      .then((bank) => {
-        const bankAccount = bank.bank_account;
+  window.frappe.db
+    .get_doc("Swiss QR Bill Settings", company)
+    .then((bank) => {
+      const bankAccount = bank.bank_account;
 
-        let companyAdderss = window.frappe.db
-          .get_doc("Address", frm.doc.company_address)
-          .catch(() => showError("Company Address Not Found"));
+      let companyAdderss = window.frappe.db
+        .get_doc("Address", frm.doc.company_address)
+        .catch(() => showError("Company Address Not Found"));
 
-        let currency = getCurrency(frm.doc.party_account_currency);
+      let currency = getCurrency(frm.doc.party_account_currency);
 
-        if (!currency) return;
+      if (!currency) return;
 
-        let customerAddress = window.frappe.db
-          .get_doc("Address", frm.doc.customer_address)
-          .catch(() => showError("Customer Address Not Found"));
+      let customerAddress = window.frappe.db
+        .get_doc("Address", frm.doc.customer_address)
+        .catch(() => showError("Customer Address Not Found"));
 
-        let iban = window.frappe.db.get_doc("Bank Account", bankAccount);
+      let iban = window.frappe.db.get_doc("Bank Account", bankAccount);
 
-        Promise.all([companyAdderss, customerAddress, iban])
-          .then((values) => {
-            showProgress(40, "generating pdf...");
-            const companyAddress = values[0];
-            const customerAddress = values[1];
-            const iban = values[2].iban;
+      Promise.all([companyAdderss, customerAddress, iban])
+        .then((values) => {
+          showProgress(40, "generating pdf...");
+          const companyAddress = values[0];
+          const customerAddress = values[1];
+          const iban = values[2].iban;
 
-            if (companyAdderss.country !== "Switzerland") {
-              return;
-            }
+          if (companyAdderss.country !== "Switzerland") {
+            return;
+          }
 
-            const companyCountry = window.frapp.db.get_doc(
-              "Country",
-              companyAdderss.country
-            );
-            const customerCountry = window.frapp.db.get_doc(
-              "Country",
-              companyAdderss.country
-            );
+          const companyCountry = window.frapp.db.get_doc(
+            "Country",
+            companyAdderss.country
+          );
+          const customerCountry = window.frapp.db.get_doc(
+            "Country",
+            companyAdderss.country
+          );
 
-            Promise.all([companyCountry, customerCountry]).then((countries) => {
-              const companyCountry = countries[0].code.toUpperCase();
-              const customerCountry = countries[0].code.toUpperCase();
+          Promise.all([companyCountry, customerCountry]).then((countries) => {
+            const companyCountry = countries[0].code.toUpperCase();
+            const customerCountry = countries[0].code.toUpperCase();
 
-              const config = {
-                currency,
-                amount,
-                reference,
-                creditor: {
-                  name: company, //
-                  address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
-                  zip: parseInt(companyAddress.pincode), // Bank Account  Code
-                  city: companyAddress.city, // Bank Account City
-                  account: iban, // Bank Account Iban
-                  country: companyCountry, // Bank Country
-                },
-                debtor: {
-                  name: customer, // Customer Doctype
-                  address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
-                  zip: customerAddress.pincode, // Sales Invoice PCode
-                  city: customerAddress.city, // Sales Invoice City
-                  country: customerCountry, // Sales Invoice Country
-                },
-              };
-              main(config, frm.docname, frm, "A4", language);
-            });
-          })
-          .catch((error) => {
-            showError(error);
+            const config = {
+              currency,
+              amount,
+              reference,
+              creditor: {
+                name: company, //
+                address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
+                zip: parseInt(companyAddress.pincode), // Bank Account  Code
+                city: companyAddress.city, // Bank Account City
+                account: iban, // Bank Account Iban
+                country: companyCountry, // Bank Country
+              },
+              debtor: {
+                name: customer, // Customer Doctype
+                address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
+                zip: customerAddress.pincode, // Sales Invoice PCode
+                city: customerAddress.city, // Sales Invoice City
+                country: customerCountry, // Sales Invoice Country
+              },
+            };
+            main(config, frm.docname, frm, "A4", language);
           });
-      })
-      .catch(() => {
-        showError("Cannot Fetch Default Bank Account");
-      });
-  },
-
-  before_submit: (frm) => {
-    const reference = getReference(frm.doc.name);
-    frm.doc.esr_reference_code = reference;
-  },
-});
+        })
+        .catch((error) => {
+          showError(error);
+        });
+    })
+    .catch(() => {
+      showError("Cannot Fetch Default Bank Account");
+    });
+};
 
 const showProgress = (current, description) => {
   const title = "Uploading Swiss QR Bill";
@@ -185,3 +178,17 @@ const getLanguage = (language) => {
   }
   return "DE";
 };
+
+window.frappe.ui.form.on("Sales Invoice", {
+  on_submit: createQRBill,
+
+  before_submit: (frm) => {
+    const reference = getReference(frm.doc.name);
+    frm.doc.esr_reference_code = reference;
+  },
+  refresh: (frm) => {
+    frm.add_custom_button("Create QR Bill", function () {
+      createQRBill(frm);
+    });
+  },
+});
