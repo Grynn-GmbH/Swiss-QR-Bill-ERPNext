@@ -89,6 +89,10 @@ window.frappe.ui.form.on("Sales Invoice", {
             const customerAddress = values[1];
             const iban = values[2].iban;
 
+            if (companyAdderss.country !== "Switzerland") {
+              return;
+            }
+
             const config = {
               currency,
               amount,
