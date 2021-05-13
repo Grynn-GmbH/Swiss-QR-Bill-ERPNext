@@ -148,6 +148,10 @@ const showError = (error) => {
 };
 
 const getLanguage = (language) => {
+  if (language === "en-US" || language === "en-GB") {
+    return "EN";
+  }
+
   if (
     (language === "en") |
     (language === "fr") |
