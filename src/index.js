@@ -62,55 +62,60 @@ window.frappe.ui.form.on("Sales Invoice", {
     const reference = getReference(frm.doc.name);
     let company = frm.doc.company;
     const language = getLanguage(frm.doc.language);
-    let companyAdderss = window.frappe.db
-      .get_doc("Address", frm.doc.company_address)
-      .catch(() => showError("Company Address Not Found"));
-    let currency = getCurrency(frm.doc.party_account_currency);
 
-    let customerAddress = window.frappe.db
-      .get_doc("Address", frm.doc.customer_address)
-      .catch(() => showError("Customer Address Not Found"));
-    let iban = window.frappe.db.get_value(
-      "Bank Account",
-      {
-        is_default: 1,
-        is_company_account: 1,
-        company: company,
-      },
-      "iban"
-    );
+    window.frappe.db
+      .get_doc("Swiss QR Bill Settings", company)
+      .then((bank) => {
+        const bankAccount = bank.bank_account;
 
-    Promise.all([companyAdderss, customerAddress, iban])
-      .then((values) => {
-        showProgress(40, "generating pdf...");
-        const companyAddress = values[0];
-        const customerAddress = values[1];
-        const iban = values[2];
+        let companyAdderss = window.frappe.db
+          .get_doc("Address", frm.doc.company_address)
+          .catch(() => showError("Company Address Not Found"));
 
-        const config = {
-          currency,
-          amount,
-          reference,
-          creditor: {
-            name: company, //
-            address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
-            zip: parseInt(companyAddress.pincode), // Bank Account  Code
-            city: companyAddress.city, // Bank Account City
-            account: iban.message.iban, // Bank Account Iban
-            country: "US", // Bank Country
-          },
-          debtor: {
-            name: customer, // Customer Doctype
-            address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
-            zip: customerAddress.pincode, // Sales Invoice PCode
-            city: customerAddress.city, // Sales Invoice City
-            country: "US", // Sales Invoice Country
-          },
-        };
-        main(config, frm.docname, frm, "A4", language);
+        let currency = getCurrency(frm.doc.party_account_currency);
+
+        let customerAddress = window.frappe.db
+          .get_doc("Address", frm.doc.customer_address)
+          .catch(() => showError("Customer Address Not Found"));
+
+        let iban = window.frappe.db.get_doc("Bank Account", bankAccount);
+
+        Promise.all([companyAdderss, customerAddress, iban])
+          .then((values) => {
+            showProgress(40, "generating pdf...");
+            const companyAddress = values[0];
+            const customerAddress = values[1];
+            const iban = values[2].iban;
+
+            const config = {
+              currency,
+              amount,
+              reference,
+              creditor: {
+                name: company, //
+                address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
+                zip: parseInt(companyAddress.pincode), // Bank Account  Code
+                city: companyAddress.city, // Bank Account City
+                account: iban, // Bank Account Iban
+                country: "US", // Bank Country
+              },
+              debtor: {
+                name: customer, // Customer Doctype
+                address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
+                zip: customerAddress.pincode, // Sales Invoice PCode
+                city: customerAddress.city, // Sales Invoice City
+                country: "US", // Sales Invoice Country
+              },
+            };
+            console.log(config);
+            main(config, frm.docname, frm, "A4", language);
+          })
+          .catch((error) => {
+            showError(error);
+          });
       })
-      .catch((error) => {
-        showError(error);
+      .catch(() => {
+        showError("Cannot Fetch Default Bank Account");
       });
   },
 
@@ -143,7 +148,6 @@ const getReference = (docname) => {
 
 const showError = (error) => {
   window.frappe.hide_progress();
-  window.frappe.throw(error);
 };
 
 const getLanguage = (language) => {
