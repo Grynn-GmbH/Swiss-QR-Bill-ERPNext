@@ -73,7 +73,7 @@ window.frappe.ui.form.on("Sales Invoice", {
           .catch(() => showError("Company Address Not Found"));
 
         let currency = getCurrency(frm.doc.party_account_currency);
-        if (!currency) return;
+
         let customerAddress = window.frappe.db
           .get_doc("Address", frm.doc.customer_address)
           .catch(() => showError("Customer Address Not Found"));
@@ -133,9 +133,9 @@ const showProgress = (current, description) => {
 
 const getCurrency = (currency) => {
   if (currency === "CHF" || currency === "EUR") {
-    return true;
+    return currency;
   }
-  return false;
+  showError("Currency Should Be Either CHF or EUR");
 };
 
 const getReference = (docname) => {
@@ -148,7 +148,7 @@ const getReference = (docname) => {
 
 const showError = (error) => {
   window.frappe.hide_progress();
-  window.frappe.show_message(error);
+  window.frappe.throw(error);
 };
 
 const getLanguage = (language) => {
