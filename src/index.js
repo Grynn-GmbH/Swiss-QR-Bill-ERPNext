@@ -148,6 +148,7 @@ const getReference = (docname) => {
 
 const showError = (error) => {
   window.frappe.hide_progress();
+  window.frappe.show_message(error);
 };
 
 const getLanguage = (language) => {
