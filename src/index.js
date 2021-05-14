@@ -1,4 +1,10 @@
 import SwissQRBill from "swissqrbill/lib/browser";
+import {
+  showProgress,
+  uploadFileAsAttachment,
+  showError,
+  getLanguageCode,
+} from "./utils";
 
 function main(paymentinfo, docname, frm, papersize, language) {
   const data = paymentinfo;
@@ -14,53 +20,20 @@ function main(paymentinfo, docname, frm, papersize, language) {
       // const url = stream.toBlobURL("application/pdf");
       // const triggerDownload()
       showProgress(80, "uploading pdf...");
-      triggerAttachment(stream.toBlob(), docname, frm);
+      uploadFileAsAttachment(stream.toBlob(), docname, frm);
     });
   } catch (error) {
     showError(error);
   }
 }
 
-function triggerAttachment(file, docname, frm) {
-  let formdata = new FormData();
-  formdata.append("is_private", 1);
-  formdata.append("folder", "Home/Attachments");
-  formdata.append("doctype", "Sales Invoice");
-  formdata.append("docname", docname);
-  formdata.append("file", file, `${docname}-QRBILL.pdf`);
-  fetch("/api/method/upload_file", {
-    headers: {
-      Accept: "application/json",
-      "X-Frappe-CSRF-Token": window.frappe.csrf_token,
-    },
-    method: "POST",
-    body: formdata,
-  }).then(() => {
-    showProgress(100, "done");
-    frm.reload_doc();
-  });
-}
-
-// function triggerDownload(uri) {
-//   var evt = new MouseEvent("click", {
-//     view: window,
-//     bubbles: false,
-//     cancelable: true,
-//   });
-//   var a = document.createElement("a");
-//   a.setAttribute("download", "recipt.pdf");
-//   a.setAttribute("href", uri);
-//   a.setAttribute("target", "_blank");
-//   a.dispatchEvent(evt);
-// }
-
-const createQRBill = (frm) => {
+const createQRBill = async (frm) => {
   showProgress(10, "getting data...");
   let customer = frm.doc.customer;
   let amount = frm.doc.grand_total;
   const reference = getReference(frm.doc.name);
   let company = frm.doc.company;
-  const language = getLanguage(frm.doc.language);
+  const language = getLanguageCode(frm.doc.language);
 
   window.frappe.db
     .get_doc("Swiss QR Bill Settings", company)
@@ -138,12 +111,6 @@ const createQRBill = (frm) => {
     });
 };
 
-const showProgress = (current, description) => {
-  const title = "Uploading Swiss QR Bill";
-  const total = 100;
-  window.frappe.show_progress(title, current, total, description, true);
-};
-
 const getCurrency = (currency) => {
   if (currency === "CHF" || currency === "EUR") {
     return currency;
@@ -157,27 +124,6 @@ const getReference = (docname) => {
   const _reference = `000000000000000000${ref}0`;
   const checksum = SwissQRBill.utils.calculateQRReferenceChecksum(_reference);
   return `${_reference}${checksum}`;
-};
-
-const showError = (error) => {
-  window.frappe.hide_progress();
-  window.frappe.throw(error);
-};
-
-const getLanguage = (language) => {
-  if (language === "en-US" || language === "en-GB") {
-    return "EN";
-  }
-
-  if (
-    (language === "en") |
-    (language === "fr") |
-    (language === "it") |
-    (language === "de")
-  ) {
-    return language.toUpperCase();
-  }
-  return "DE";
 };
 
 window.frappe.ui.form.on("Sales Invoice", {
