@@ -39,7 +39,6 @@ const createQRBill = async (frm) => {
   const company = frm.doc.company;
   const language = getLanguageCode(frm.doc.language);
   const bank = await getDocument("Swiss QR Bill Settings", company);
-  console.log(bank);
   const bankAccount = bank.bank_account;
   const currency = getCurrency(frm.doc.currency);
   if (!currency) return;
@@ -52,12 +51,10 @@ const createQRBill = async (frm) => {
   const iban = await getDocument("Bank Account", bankAccount);
 
   showProgress(40, "generating pdf...");
-
   if (companyAddress.country !== "Switzerland") {
     showError("Company Should Be Switzerland");
     return;
   }
-
   const companyCountry = await getDocument("Country", companyAddress.country);
   const customerCountry = await getDocument("Country", customerAddress.country);
 
@@ -73,7 +70,7 @@ const createQRBill = async (frm) => {
       address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
       zip: parseInt(companyAddress.pincode), // Bank Account  Code
       city: companyAddress.city, // Bank Account City
-      account: iban, // Bank Account Iban
+      account: iban.iban, // Bank Account Iban
       country: companyCode, // Bank Country
     },
     debtor: {
