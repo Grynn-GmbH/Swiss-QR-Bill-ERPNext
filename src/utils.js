@@ -1,3 +1,4 @@
+import SwissQRBill from "swissqrbill/lib/browser";
 import { FRAPPE_FILE_UPLOAD_ENDPOINT } from "./constant";
 import { updateMessage } from "./message";
 
@@ -103,8 +104,34 @@ export const getLanguageCode = (language) => {
  */
 export const getDocument = async (doctype, docname) => {
   try {
-    return await window.frappe.get_doc(doctype, docname);
+    return await window.frappe.db.get_doc(doctype, docname);
   } catch (error) {
     showError(error);
   }
+};
+
+/**
+ * Calculates and Returns Reference Code
+ * @param {String} docname DocumentName
+ * @returns {String} Reference Code
+ */
+export const getReferenceCode = (docname) => {
+  const _ref = docname.split("-").join("");
+  const ref = _ref.substr(_ref.length - 7);
+  const _reference = `000000000000000000${ref}0`;
+  const checksum = SwissQRBill.utils.calculateQRReferenceChecksum(_reference);
+  return `${_reference}${checksum}`;
+};
+
+/**
+ * Returns Currency Code or Shows Error
+ * @param {String 'CHF' | 'EUR'} currency Currency
+ * @returns Currency Code
+ * @throws {Error} Currency Should Either Be CHF or EUR
+ */
+export const getCurrency = (currency) => {
+  if (currency === "CHF" || currency === "EUR") {
+    return currency;
+  }
+  showError("Currency Should Be Either CHF or EUR");
 };
