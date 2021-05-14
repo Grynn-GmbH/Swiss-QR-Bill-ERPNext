@@ -93,3 +93,18 @@ export const getLanguageCode = (language) => {
   }
   return "DE";
 };
+
+/**
+ *
+ * @param {String} doctype Doctype
+ * @param {String} docname Docname
+ * @param {String} error Error Message
+ * @returns {Promise} Doc
+ */
+export const getDocument = async (doctype, docname) => {
+  try {
+    return await window.frappe.get_doc(doctype, docname);
+  } catch (error) {
+    showError(error);
+  }
+};
