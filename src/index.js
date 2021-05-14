@@ -29,6 +29,7 @@ function main(paymentinfo, docname, frm, papersize, language) {
 
 const createQRBill = async (frm) => {
   showProgress(10, "getting data...");
+
   let customer = frm.doc.customer;
   let amount = frm.doc.grand_total;
   const reference = getReference(frm.doc.name);
