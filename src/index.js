@@ -1,4 +1,5 @@
 import SwissQRBill from "swissqrbill/lib/browser";
+import { generateQRConfig } from "./qrconfig";
 import {
   showProgress,
   uploadFileAsAttachment,
@@ -47,7 +48,7 @@ const createQRBill = async (frm) => {
     "Address",
     frm.doc.customer_address
   );
-  const iban = await getDocument("Bank Account", bankAccount);
+  const { iban } = await getDocument("Bank Account", bankAccount);
 
   showProgress(40, "generating pdf...");
   if (companyAddress.country !== "Switzerland") {
@@ -57,29 +58,21 @@ const createQRBill = async (frm) => {
   const companyCountry = await getDocument("Country", companyAddress.country);
   const customerCountry = await getDocument("Country", customerAddress.country);
 
-  const companyCode = companyCountry.code.toUpperCase();
-  const customerCode = customerCountry.code.toUpperCase();
+  const companyAddressCode = companyCountry.code.toUpperCase();
+  const customerAddressCode = customerCountry.code.toUpperCase();
 
-  const config = {
+  const config = generateQRConfig(
     currency,
     amount,
-    reference,
-    creditor: {
-      name: company, //
-      address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
-      zip: parseInt(companyAddress.pincode), // Bank Account  Code
-      city: companyAddress.city, // Bank Account City
-      account: iban.iban, // Bank Account Iban
-      country: companyCode, // Bank Country
-    },
-    debtor: {
-      name: customer, // Customer Doctype
-      address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
-      zip: customerAddress.pincode, // Sales Invoice PCode
-      city: customerAddress.city, // Sales Invoice City
-      country: customerCode, // Sales Invoice Country
-    },
-  };
+    company,
+    companyAddress,
+    companyAddressCode,
+    iban,
+    customer,
+    customerAddress,
+    customerAddressCode
+  );
+
   main(config, frm.docname, frm, "A4", language);
 };
 
