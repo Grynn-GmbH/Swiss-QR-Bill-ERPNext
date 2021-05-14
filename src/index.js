@@ -4,6 +4,9 @@ import {
   uploadFileAsAttachment,
   showError,
   getLanguageCode,
+  getDocument,
+  getReferenceCode,
+  getCurrency,
 } from "./utils";
 
 function main(paymentinfo, docname, frm, papersize, language) {
@@ -30,101 +33,58 @@ function main(paymentinfo, docname, frm, papersize, language) {
 const createQRBill = async (frm) => {
   showProgress(10, "getting data...");
 
-  let customer = frm.doc.customer;
-  let amount = frm.doc.grand_total;
-  const reference = getReference(frm.doc.name);
-  let company = frm.doc.company;
+  const customer = frm.doc.customer;
+  const amount = frm.doc.grand_total;
+  const reference = getReferenceCode(frm.doc.name);
+  const company = frm.doc.company;
   const language = getLanguageCode(frm.doc.language);
+  const bank = await getDocument("Swiss QR Bill Settings", company);
+  console.log(bank);
+  const bankAccount = bank.bank_account;
+  const currency = getCurrency(frm.doc.currency);
+  if (!currency) return;
 
-  window.frappe.db
-    .get_doc("Swiss QR Bill Settings", company)
-    .then((bank) => {
-      const bankAccount = bank.bank_account;
+  const companyAddress = await getDocument("Address", frm.doc.company_address);
+  const customerAddress = await getDocument(
+    "Address",
+    frm.doc.customer_address
+  );
+  const iban = await getDocument("Bank Account", bankAccount);
 
-      let companyAdderss = window.frappe.db
-        .get_doc("Address", frm.doc.company_address)
-        .catch(() => showError("Company Address Not Found"));
-      let currency = getCurrency(frm.doc.currency);
+  showProgress(40, "generating pdf...");
 
-      if (!currency) return;
-
-      let customerAddress = window.frappe.db
-        .get_doc("Address", frm.doc.customer_address)
-        .catch(() => showError("Customer Address Not Found"));
-
-      let iban = window.frappe.db.get_doc("Bank Account", bankAccount);
-
-      Promise.all([companyAdderss, customerAddress, iban])
-        .then((values) => {
-          showProgress(40, "generating pdf...");
-          const companyAddress = values[0];
-          const customerAddress = values[1];
-          const iban = values[2].iban;
-
-          if (companyAddress.country !== "Switzerland") {
-            showError("Company Should Be Switzerland");
-            return;
-          }
-
-          const companyCountry = window.frappe.db.get_doc(
-            "Country",
-            companyAddress.country
-          );
-
-          const customerCountry = window.frappe.db.get_doc(
-            "Country",
-            customerAddress.country
-          );
-
-          Promise.all([companyCountry, customerCountry]).then((countries) => {
-            const companyCountry = countries[0].code.toUpperCase();
-            const customerCountry = countries[0].code.toUpperCase();
-
-            const config = {
-              currency,
-              amount,
-              reference,
-              creditor: {
-                name: company, //
-                address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
-                zip: parseInt(companyAddress.pincode), // Bank Account  Code
-                city: companyAddress.city, // Bank Account City
-                account: iban, // Bank Account Iban
-                country: companyCountry, // Bank Country
-              },
-              debtor: {
-                name: customer, // Customer Doctype
-                address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
-                zip: customerAddress.pincode, // Sales Invoice PCode
-                city: customerAddress.city, // Sales Invoice City
-                country: customerCountry, // Sales Invoice Country
-              },
-            };
-            main(config, frm.docname, frm, "A4", language);
-          });
-        })
-        .catch((error) => {
-          showError(error);
-        });
-    })
-    .catch(() => {
-      showError("Cannot Fetch Default Bank Account");
-    });
-};
-
-const getCurrency = (currency) => {
-  if (currency === "CHF" || currency === "EUR") {
-    return currency;
+  if (companyAddress.country !== "Switzerland") {
+    showError("Company Should Be Switzerland");
+    return;
   }
-  showError("Currency Should Be Either CHF or EUR");
-};
 
-const getReference = (docname) => {
-  const _ref = docname.split("-").join("");
-  const ref = _ref.substr(_ref.length - 7);
-  const _reference = `000000000000000000${ref}0`;
-  const checksum = SwissQRBill.utils.calculateQRReferenceChecksum(_reference);
-  return `${_reference}${checksum}`;
+  const companyCountry = await getDocument("Country", companyAddress.country);
+  const customerCountry = await getDocument("Country", customerAddress.country);
+
+  const companyCode = companyCountry.code.toUpperCase();
+  const customerCode = customerCountry.code.toUpperCase();
+
+  const config = {
+    currency,
+    amount,
+    reference,
+    creditor: {
+      name: company, //
+      address: `${companyAddress.address_line1} ${companyAddress.address_line2}`, // Address Line 1 & line 2
+      zip: parseInt(companyAddress.pincode), // Bank Account  Code
+      city: companyAddress.city, // Bank Account City
+      account: iban, // Bank Account Iban
+      country: companyCode, // Bank Country
+    },
+    debtor: {
+      name: customer, // Customer Doctype
+      address: `${customerAddress.address_line1} ${customerAddress.address_line2}`, // Address Line 1 & 2
+      zip: customerAddress.pincode, // Sales Invoice PCode
+      city: customerAddress.city, // Sales Invoice City
+      country: customerCode, // Sales Invoice Country
+    },
+  };
+  main(config, frm.docname, frm, "A4", language);
 };
 
 window.frappe.ui.form.on("Sales Invoice", {
@@ -133,7 +93,7 @@ window.frappe.ui.form.on("Sales Invoice", {
   },
 
   before_submit: (frm) => {
-    const reference = getReference(frm.doc.name);
+    const reference = getReferenceCode(frm.doc.name);
     frm.doc.esr_reference_code = reference;
   },
   refresh: (frm) => {
