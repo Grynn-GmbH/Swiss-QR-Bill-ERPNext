@@ -61,7 +61,7 @@ const createQRBill = (frm) => {
   const reference = getReference(frm.doc.name);
   let company = frm.doc.company;
   const language = getLanguage(frm.doc.language);
-
+  console.log(company);
   window.frappe.db
     .get_doc("Swiss QR Bill Settings", company)
     .then((bank) => {
@@ -71,7 +71,7 @@ const createQRBill = (frm) => {
         .get_doc("Address", frm.doc.company_address)
         .catch(() => showError("Company Address Not Found"));
 
-      let currency = getCurrency(frm.doc.party_account_currency);
+      let currency = getCurrency(frm.doc.currency);
 
       if (!currency) return;
 
@@ -88,17 +88,20 @@ const createQRBill = (frm) => {
           const customerAddress = values[1];
           const iban = values[2].iban;
 
-          if (companyAdderss.country !== "Switzerland") {
+          console.log(companyAddress, customerAddress, iban);
+
+          if (companyAddress.country !== "Switzerland") {
+            showError("Company Should Be Switzerland");
             return;
           }
 
           const companyCountry = window.frapp.db.get_doc(
             "Country",
-            companyAdderss.country
+            companyAddress.country
           );
           const customerCountry = window.frapp.db.get_doc(
             "Country",
-            companyAdderss.country
+            companyAddress.country
           );
 
           Promise.all([companyCountry, customerCountry]).then((countries) => {
