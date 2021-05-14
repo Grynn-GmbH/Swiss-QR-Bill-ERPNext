@@ -1,0 +1,1 @@
+{"version":3,"sources":["constant.js"],"names":["FRAPPE_FILE_UPLOAD_ENDPOINT"],"mappings":";AAAO,aAAA,OAAA,eAAA,QAAA,aAAA,CAAA,OAAA,IAAA,QAAA,iCAAA,EAAA,MAAMA,EAA8B,0BAApC,QAAA,4BAAoC","file":"constant.js","sourceRoot":"../../../src","sourcesContent":["export const FRAPPE_FILE_UPLOAD_ENDPOINT = \"/api/method/upload_file\";\n"]}

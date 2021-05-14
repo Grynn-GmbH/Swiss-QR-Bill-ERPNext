@@ -1,0 +1,1 @@
+{"version":3,"sources":["message.js"],"names":["updateMessage","window","frappe","_"],"mappings":";AAAO,aAAA,OAAA,eAAA,QAAA,aAAA,CAAA,OAAA,IAAA,QAAA,mBAAA,EAAA,MAAMA,EAAgBC,OAAOC,OAAOC,EAAE,2BAAtC,QAAA,cAAA","file":"message.js","sourceRoot":"../../../src","sourcesContent":["export const updateMessage = window.frappe._(\"Uploading Swiss QR Bill\");\n"]}
