@@ -16,6 +16,14 @@ Founded in 2017 by Deepak Pai in order to help companies with their digital tran
 Grynn is an advocate of using Free and Open Source Software (FOSS). ERPNext is world's #1 ERP system that is 100% FOSS. 
 Grynn from time to time contributes to the ERPNext ecosystem by developing Open Source applications such as Swiss QR Bill. 
 
+
+### Grynn Swiss QR Bill 
+
+#### Video : How to use it
+https://user-images.githubusercontent.com/23282682/118352148-265c4080-b560-11eb-8fa2-184d016b5c5f.mp4
+
+
+
 ### Grynss Swiss Videos from Meetup
 ---
 
