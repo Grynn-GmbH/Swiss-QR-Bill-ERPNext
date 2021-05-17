@@ -118,7 +118,7 @@ export const getDocument = async (doctype, docname) => {
 export const getReferenceCode = (docname) => {
   const _ref = docname.split("-").join("");
   const ref = _ref.substr(_ref.length - 7);
-  const _reference = `000000000000000000${ref}0`;
+  const _reference = `0000000000000000000${ref}`;
   const checksum = SwissQRBill.utils.calculateQRReferenceChecksum(_reference);
   return `${_reference}${checksum}`;
 };
