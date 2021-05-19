@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 from . import __version__ as app_version
 
 app_name = "grynnswissqrbill"
-app_title = "Grynnswissqrbill"
-app_publisher = "Grynn"
+app_title = "Swiss QR Bill for ERPNext"
+app_publisher = "Grynn GmbH"
 app_description = "Create A Qr Bill According to Swiss QR Market"
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
